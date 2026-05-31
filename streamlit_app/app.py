@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import cv2
 import json
 
@@ -22,12 +23,23 @@ st.set_page_config(
 # LOAD CLASSES
 # =====================================================
 
-with open(
-    "classes.json",
-    "r"
-) as f:
+try:
 
-    classes = json.load(f)
+    with open(
+        "classes.json",
+        "r"
+    ) as f:
+
+        classes = json.load(f)
+
+except FileNotFoundError:
+
+    st.error(
+        "❌ File 'classes.json' tidak ditemukan. "
+        "Pastikan file ada di direktori yang sama dengan app.py"
+    )
+
+    st.stop()
 
 # =====================================================
 # CONSTANT
@@ -73,7 +85,19 @@ def load_ai_model():
     return model
 
 
-model = load_ai_model()
+try:
+
+    model = load_ai_model()
+
+except Exception as e:
+
+    st.error(
+        f"❌ Gagal memuat model: {e}\n\n"
+        "Pastikan file 'fruit_best_weights.weights.h5' "
+        "ada di direktori yang sama dengan app.py"
+    )
+
+    st.stop()
 
 # =====================================================
 # PREPROCESS IMAGE
@@ -268,47 +292,79 @@ elif menu == "Prediction":
                 use_container_width=True
             )
 
-        processed = preprocess_image(
-            image_np
-        )
+        with st.spinner("Sedang memproses prediksi..."):
 
-        prediction = model.predict(
-            processed,
-            verbose=0
-        )
+            try:
 
-        predicted_class = np.argmax(
-            prediction
-        )
+                processed = preprocess_image(
+                    image_np
+                )
 
-        confidence = (
-            prediction[0][predicted_class]
-            * 100
-        )
+                prediction = model.predict(
+                    processed,
+                    verbose=0
+                )
 
-        with col2:
+                predicted_class = np.argmax(
+                    prediction
+                )
 
-            st.success(
-                f"Prediction : {classes[predicted_class]}"
-            )
+                confidence = (
+                    prediction[0][predicted_class]
+                    * 100
+                )
 
-            st.metric(
-                "Confidence",
-                f"{confidence:.2f}%"
-            )
+                with col2:
 
-        st.subheader(
-            "Prediction Probability"
-        )
+                    st.success(
+                        f"Prediction : {classes[predicted_class]}"
+                    )
 
-        prob_dict = {}
+                    st.metric(
+                        "Confidence",
+                        f"{confidence:.2f}%"
+                    )
 
-        for i, fruit in enumerate(classes):
+                    # Top 3 Predictions
+                    st.markdown("**Top 3 Predictions:**")
 
-            prob_dict[fruit] = float(
-                prediction[0][i]
-            )
+                    top3_idx = np.argsort(
+                        prediction[0]
+                    )[::-1][:3]
 
-        st.bar_chart(
-            prob_dict
-        )
+                    medals = ["🥇", "🥈", "🥉"]
+
+                    for rank, idx in enumerate(top3_idx):
+
+                        prob_pct = prediction[0][idx] * 100
+
+                        st.write(
+                            f"{medals[rank]} "
+                            f"{classes[idx]} "
+                            f"— {prob_pct:.2f}%"
+                        )
+
+                st.subheader(
+                    "Prediction Probability"
+                )
+
+                prob_dict = {}
+
+                for i, fruit in enumerate(classes):
+
+                    prob_dict[fruit] = float(
+                        prediction[0][i]
+                    ) * 100
+
+                prob_df = pd.DataFrame.from_dict(
+                    {"Probability (%)": prob_dict},
+                    orient="columns"
+                )
+
+                st.bar_chart(prob_df)
+
+            except Exception as e:
+
+                st.error(
+                    f"❌ Terjadi error saat prediksi: {e}"
+                )
