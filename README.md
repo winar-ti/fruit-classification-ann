@@ -78,3 +78,9 @@ Artificial Intelligence / Image Classification Project
 ## License
 
 This project is developed for academic and educational purposes.
+
+## Institution
+
+President University
+
+Course: BI (Image Recognition)
