@@ -62,8 +62,6 @@ The experimental results indicate that the ReLU activation function achieved the
 
 ### Group 6
 
-**Group Participants:**
-
 1. Alvita Azalia
 2. Bagas Fitria Maiardi (001202507025)
 3. Dasta Satria Nursyakirin (001202507029)
@@ -73,7 +71,7 @@ The experimental results indicate that the ReLU activation function achieved the
 
 ## Course Information
 
-Artificial Intelligence / Image Classification Project
+BI / Image Classification Project
 
 ## License
 
@@ -83,4 +81,4 @@ This project is developed for academic and educational purposes.
 
 President University
 
-Course: BI (Image Recognition)
+
